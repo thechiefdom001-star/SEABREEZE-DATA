@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sea Breeze Data Ventures - Data Mining & Client Management</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.css">
+<script src="https://cdn.jsdelivr.net/npm/notyf@3/notyf.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/remixicon/4.2.0/remixicon.min.css"/>
+<style>
+:root{--sb-primary:#0ea5e9;--sb-dark:#0f172a}
+html{scroll-behavior:smooth}
+body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif}
+.btn{min-height:44px}
+.table-wrap{overflow-x:auto}
+table th{white-space:nowrap}
+.sidebar-link.active{background:rgba(14,165,233,.15);color:#0ea5e9;font-weight:600}
+.scrollbar-thin::-webkit-scrollbar{width:6px;height:6px}
+.scrollbar-thin::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:999px}
+@media print{
+  @page{margin:15mm;size:A4}
+  body *{visibility:hidden}
+  #print-area, #print-area *{visibility:visible}
+  #print-area{position:absolute;left:0;top:0;width:100%}
+  .no-print{display:none!important}
+  table{width:100%;border-collapse:collapse;font-size:12px}
+  th,td{border:1px solid #000;padding:6px}
+  thead{display:table-header-group}
+  tfoot{display:table-footer-group}
+  .print-header{display:flex;align-items:center;gap:16px;margin-bottom:12px;border-bottom:2px solid #000;padding-bottom:8px}
+  .print-footer{position:fixed;bottom:0;width:100%;text-align:center;font-size:10px;border-top:1px solid #000;padding-top:4px}
+}
+</style>
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+<div class="flex h-screen overflow-hidden">
+  <!-- Sidebar -->
+  <aside id="sidebar" class="fixed lg:static inset-y-0 left-0 z-40 w-72 bg-slate-900 text-slate-200 flex flex-col transform -translate-x-full lg:translate-x-0 transition-transform duration-300">
+    <div class="h-16 flex items-center gap-3 px-4 border-b border-slate-700">
+      <img id="sidebarLogo" src="https://ui-avatars.com/api/?name=Sea+Breeze&background=0ea5e9&color=fff" class="w-10 h-10 rounded-xl object-cover bg-slate-800"/>
+      <div>
+        <div class="font-bold leading-tight" id="sidebarCompany">Sea Breeze Data Ventures</div>
+        <div class="text-xs text-slate-400">Client Management System</div>
+      </div>
+    </div>
+    <nav class="flex-1 overflow-y-auto scrollbar-thin p-2 space-y-1 text-sm">
+      <button data-route="dashboard" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 active"><i class="ri-dashboard-line text-lg"></i> Dashboard</button>
+      <button data-route="all" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-group-line text-lg"></i> All Customers +</button>
+      <button data-route="active" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-checkbox-circle-line text-lg"></i> Active +</button>
+      <button data-route="inactive" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-pause-circle-line text-lg"></i> Inactive +</button>
+      <button data-route="dormant" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-sleep-line text-lg"></i> Dormant +</button>
+      <button data-route="renewals" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-calendar-check-line text-lg"></i> Renewals Due +</button>
+      <button data-route="import" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-upload-2-line text-lg"></i> Import Excel/CSV</button>
+      <button data-route="exportExcel" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-file-excel-line text-lg"></i> Export to Excel</button>
+      <button data-route="exportCenter" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-export-line text-lg"></i> Export Center</button>
+      <button data-route="commission" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-percent-line text-lg"></i> Agent Commission +</button>
+      <button data-route="agentTrends" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-line-chart-line text-lg"></i> Agent Trends</button>
+      <button data-route="bulk" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-message-3-line text-lg"></i> Bulk Messaging Center</button>
+      <button data-route="notifLog" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-notification-3-line text-lg"></i> Notification Log</button>
+      <button data-route="health" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-heart-pulse-line text-lg"></i> Data Health Check</button>
+      <button data-route="changeLog" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-history-line text-lg"></i> Data Change Log</button>
+      <button data-route="churn" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-user-unfollow-line text-lg"></i> Churn Risk</button>
+      <button data-route="geo" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-map-pin-line text-lg"></i> Geographic Analysis</button>
+      <button data-route="forecast" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-calendar-line text-lg"></i> Renewal Forecast</button>
+      <button data-route="settings" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-settings-3-line text-lg"></i> Settings</button>
+      <button data-route="refresh" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-refresh-line text-lg"></i> Refresh Data</button>
+      <button data-route="apiLogs" class="sidebar-link w-full flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800"><i class="ri-terminal-box-line text-lg"></i> API Logs</button>
+    </nav>
+    <div class="p-3 border-t border-slate-700 text-xs text-slate-400">
+      <div>v4.0 • Offline First</div>
+      <div id="lastSync" class="truncate">Last sync: never</div>
+    </div>
+  </aside>
+
+  <!-- Overlay -->
+  <div id="overlay" class="fixed inset-0 bg-black/50 z-30 hidden lg:hidden"></div>
+
+  <!-- Main -->
+  <div class="flex-1 flex flex-col min-w-0">
+    <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-4 lg:px-6 sticky top-0 z-20">
+      <div class="flex items-center gap-3">
+        <button id="hamburger" class="lg:hidden btn w-11 h-11 grid place-items-center rounded-xl hover:bg-slate-100"><i class="ri-menu-line text-2xl"></i></button>
+        <div>
+          <h1 id="pageTitle" class="text-xl font-bold leading-tight">Dashboard</h1>
+          <div class="text-xs text-slate-500 hidden sm:block">Sea Breeze Data Ventures • Data Mining & Client Management</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <button id="quickPrint" class="btn hidden sm:inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-slate-900 text-white hover:bg-slate-800 text-sm"><i class="ri-printer-line"></i> Print</button>
+        <button id="quickRefresh" class="btn w-11 h-11 grid place-items-center rounded-xl hover:bg-slate-100"><i class="ri-refresh-line text-xl"></i></button>
+        <div class="w-9 h-9 rounded-full bg-sky-100 grid place-items-center font-bold text-sky-700">SB</div>
+      </div>
+    </header>
+
+    <main id="app" class="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
+      <!-- DASHBOARD -->
+      <section data-page="dashboard" class="page">
+        <!-- KPI -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-sm text-slate-500">Active Customers</div>
+                <div id="kpiActive" class="text-3xl font-bold mt-1">0</div>
+              </div>
+              <div class="w-12 h-12 rounded-xl bg-emerald-100 grid place-items-center text-emerald-600"><i class="ri-checkbox-circle-line text-2xl"></i></div>
+            </div>
+            <div class="text-xs text-emerald-600 mt-2">Real-time</div>
+          </div>
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-sm text-slate-500">Inactive</div>
+                <div id="kpiInactive" class="text-3xl font-bold mt-1">0</div>
+              </div>
+              <div class="w-12 h-12 rounded-xl bg-amber-100 grid place-items-center text-amber-600"><i class="ri-pause-circle-line text-2xl"></i></div>
+            </div>
+            <div class="text-xs text-slate-500 mt-2">Status = Inactive</div>
+          </div>
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-sm text-slate-500">Dormant</div>
+                <div id="kpiDormant" class="text-3xl font-bold mt-1">0</div>
+              </div>
+              <div class="w-12 h-12 rounded-xl bg-slate-200 grid place-items-center text-slate-600"><i class="ri-sleep-line text-2xl"></i></div>
+            </div>
+            <div class="text-xs text-slate-500 mt-2">Past renewal threshold</div>
+          </div>
+          <div class="bg-red-50 border border-red-200 rounded-2xl p-5 shadow-sm">
+            <div class="flex items-center justify-between">
+              <div>
+                <div class="text-sm text-red-700 font-medium">Renewals Due in 2 Days</div>
+                <div id="kpiRenewals" class="text-3xl font-bold mt-1 text-red-700">0</div>
+              </div>
+              <div class="w-12 h-12 rounded-xl bg-red-200 grid place-items-center text-red-700"><i class="ri-alarm-warning-line text-2xl"></i></div>
+            </div>
+            <button id="sendRenewalBtn" class="btn mt-3 w-full bg-red-600 hover:bg-red-700 text-white rounded-xl py-2.5 text-sm font-semibold">Send Bulk Reminder</button>
+          </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 xl:col-span-2">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="font-bold">Status Distribution</h3>
+              <button onclick="printTable('statusTable','Status Distribution')" class="btn text-sm px-3 py-2 rounded-lg border hover:bg-slate-50">Print Table</button>
+            </div>
+            <canvas id="statusPie" height="120"></canvas>
+            <div class="table-wrap mt-4">
+              <table id="statusTable" class="w-full text-sm">
+                <thead class="bg-slate-50"><tr><th class="text-left p-2">Status</th><th class="text-right p-2">Count</th></tr></thead>
+                <tbody id="statusTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
+            <h3 class="font-bold mb-3">Quick Actions</h3>
+            <div class="grid grid-cols-2 gap-3">
+              <button data-route="import" class="btn nav-btn flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-sky-50 hover:bg-sky-100 text-sky-700"><i class="ri-upload-2-line text-2xl"></i><span class="text-xs font-semibold">Import</span></button>
+              <button data-route="exportExcel" class="btn nav-btn flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-emerald-700"><i class="ri-file-excel-line text-2xl"></i><span class="text-xs font-semibold">Export</span></button>
+              <button data-route="bulk" class="btn nav-btn flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-violet-50 hover:bg-violet-100 text-violet-700"><i class="ri-message-3-line text-2xl"></i><span class="text-xs font-semibold">Bulk SMS</span></button>
+              <button data-route="health" class="btn nav-btn flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700"><i class="ri-heart-pulse-line text-2xl"></i><span class="text-xs font-semibold">Health</span></button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TABLES -->
+      <section data-page="all" class="page hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200">
+          <div class="p-4 border-b flex flex-wrap items-center justify-between gap-3">
+            <h3 class="font-bold">All Customers</h3>
+            <div class="flex items-center gap-2">
+              <input id="searchAll" placeholder="Search..." class="px-3 py-2 border rounded-xl text-sm w-48"/>
+              <button onclick="printTable('tblAll','All Customers')" class="btn px-3 py-2 rounded-xl border hover:bg-slate-50 text-sm"><i class="ri-printer-line"></i> Print Table</button>
+            </div>
+          </div>
+          <div class="table-wrap p-4"><table id="tblAll" class="w-full text-sm"></table></div>
+        </div>
+      </section>
+
+      <section data-page="active" class="page hidden"><div class="bg-white rounded-2xl shadow-sm border border-slate-200"><div class="p-4 border-b flex justify-between"><h3 class="font-bold">Active Customers</h3><button onclick="printTable('tblActive','Active Customers')" class="btn px-3 py-2 rounded-xl border text-sm">Print Table</button></div><div class="table-wrap p-4"><table id="tblActive" class="w-full text-sm"></table></div></div></section>
+      <section data-page="inactive" class="page hidden"><div class="bg-white rounded-2xl shadow-sm border border-slate-200"><div class="p-4 border-b flex justify-between"><h3 class="font-bold">Inactive Customers</h3><button onclick="printTable('tblInactive','Inactive Customers')" class="btn px-3 py-2 rounded-xl border text-sm">Print Table</button></div><div class="table-wrap p-4"><table id="tblInactive" class="w-full text-sm"></table></div></div></section>
+      <section data-page="dormant" class="page hidden"><div class="bg-white rounded-2xl shadow-sm border border-slate-200"><div class="p-4 border-b flex justify-between"><h3 class="font-bold">Dormant Customers</h3><button onclick="printTable('tblDormant','Dormant Customers')" class="btn px-3 py-2 rounded-xl border text-sm">Print Table</button></div><div class="table-wrap p-4"><table id="tblDormant" class="w-full text-sm"></table></div></div></section>
+      <section data-page="renewals" class="page hidden"><div class="bg-white rounded-2xl shadow-sm border border-slate-200"><div class="p-4 border-b flex justify-between"><h3 class="font-bold">Renewals Due (2 Days)</h3><button onclick="printTable('tblRenewals','Renewals Due')" class="btn px-3 py-2 rounded-xl border text-sm">Print Table</button></div><div class="table-wrap p-4"><table id="tblRenewals" class="w-full text-sm"></table></div></div></section>
+
+      <!-- IMPORT -->
+      <section data-page="import" class="page hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-5">
+          <h3 class="font-bold text-lg">Import Excel / CSV</h3>
+          <input id="importFile" type="file" accept=".xlsx,.xls,.csv" class="block w-full text-sm"/>
+          <div class="grid md:grid-cols-3 gap-4">
+            <label class="flex items-center gap-2"><input type="radio" name="importMode" value="merge" checked> Merge (skip dupes)</label>
+            <label class="flex items-center gap-2"><input type="radio" name="importMode" value="replace"> Replace All</label>
+            <label class="flex items-center gap-2"><input type="radio" name="importMode" value="update"> Update Existing</label>
+          </div>
+          <div class="flex gap-3">
+            <button id="previewImport" class="btn px-4 py-2.5 rounded-xl bg-slate-900 text-white">Preview 5 Rows</button>
+            <button id="downloadTemplate" class="btn px-4 py-2.5 rounded-xl border">Download Sample Template</button>
+          </div>
+          <div id="importPreview" class="table-wrap"></div>
+          <div id="headerMapping" class="space-y-3"></div>
+          <button id="confirmImport" class="btn px-5 py-3 rounded-xl bg-emerald-600 text-white font-semibold hidden">Confirm Import</button>
+        </div>
+      </section>
+
+      <!-- EXPORT EXCEL -->
+      <section data-page="exportExcel" class="page hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+          <h3 class="font-bold text-lg">Export to Excel</h3>
+          <p class="text-sm text-slate-600">Export current customer dataset with dynamic headers.</p>
+          <button id="exportXlsxBtn" class="btn px-5 py-3 rounded-xl bg-emerald-600 text-white font-semibold">Download .xlsx</button>
+        </div>
+      </section>
+
+      <!-- EXPORT CENTER -->
+      <section data-page="exportCenter" class="page hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+          <h3 class="font-bold text-lg">Export Center</h3>
+          <div class="grid sm:grid-cols-3 gap-3">
+            <button onclick="exportJSON()" class="btn p-4 rounded-xl border hover:bg-slate-50">Export JSON</button>
+            <button onclick="exportCSV()" class="btn p-4 rounded-xl border hover:bg-slate-50">Export CSV</button>
+            <button onclick="printTable('tblAll','All Customers')" class="btn p-4 rounded-xl border hover:bg-slate-50">Print All</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- COMMISSION -->
+      <section data-page="commission" class="page hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200">
+          <div class="p-4 border-b flex justify-between items-center">
+            <h3 class="font-bold">Agent Commission</h3>
+            <button onclick="printTable('tblCommission','Agent Commission')" class="btn px-3 py-2 rounded-xl border text-sm">Print Table</button>
+          </div>
+          <div class="p-4 space-y-4">
+            <div class="text-sm text-slate-600">Rate: <span id="commissionRateLabel" class="font-bold"></span>%</div>
+            <div class="table-wrap"><table id="tblCommission" class="w-full text-sm"></table></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- AGENT TRENDS -->
+      <section data-page="agentTrends" class="page hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <h3 class="font-bold mb-4">Agent Trends</h3>
+          <canvas id="agentChart" height="120"></canvas>
+        </div>
+      </section>
+
+      <!-- BULK MESSAGING -->
+      <section data-page="bulk" class="page hidden">
+        <div class="grid xl:grid-cols-3 gap-4">
+          <div class="xl:col-span-2 bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+            <h3 class="font-bold text-lg">Bulk Messaging Center</h3>
+            <div>
+              <label class="text-sm font-medium">Message Template</label>
+              <textarea id="smsTemplate" class="w-full mt-1 border rounded-xl p-3 h-32 text-sm" placeholder="Hi {Customer Name}, your renewal is due on {Renewal Date}. Account: {5G Account Number}">Hi {Customer Name}, your 5G service (Acc: {5G Account Number}) is due for renewal on {Renewal Date}. Pay via Mpesa. - Sea Breeze</textarea>
+              <div class="text-xs text-slate-500 mt-1">Merge fields: {Customer Name}, {5G Account Number}, {Renewal Date}, {Customer Number}</div>
+            </div>
+            <div class="flex flex-wrap gap-3">
+              <button id="loadRenewalsBtn" class="btn px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm">Load Renewals Due</button>
+              <button id="sendTestSms" class="btn px-4 py-2.5 rounded-xl border text-sm">Send Test</button>
+              <button id="sendBulkSms" class="btn px-4 py-2.5 rounded-xl bg-red-600 text-white text-sm">Bulk Send (1/sec)</button>
+            </div>
+            <div class="table-wrap"><table id="tblBulkRecipients" class="w-full text-sm"></table></div>
+          </div>
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h3 class="font-bold mb-3">Send History</h3>
+            <div id="smsHistory" class="space-y-2 text-sm max-h-[60vh] overflow-y-auto"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- NOTIF LOG -->
+      <section data-page="notifLog" class="page hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <h3 class="font-bold mb-3">Notification Log</h3>
+          <div id="notifLogList" class="space-y-2 text-sm"></div>
+        </div>
+      </section>
+
+      <!-- HEALTH -->
+      <section data-page="health" class="page hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+          <h3 class="font-bold text-lg">Data Health Check</h3>
+          <div id="healthReport" class="grid md:grid-cols-2 gap-4"></div>
+        </div>
+      </section>
+
+      <!-- CHANGE LOG -->
+      <section data-page="changeLog" class="page hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <div class="flex justify-between items-center mb-3">
+            <h3 class="font-bold">Data Change Log</h3>
+            <button onclick="printTable('tblChangeLog','Data Change Log')" class="btn px-3 py-2 rounded-xl border text-sm">Print Table</button>
+          </div>
+          <div class="table-wrap"><table id="tblChangeLog" class="w-full text-sm"></table></div>
+        </div>
+      </section>
+
+      <!-- CHURN -->
+      <section data-page="churn" class="page hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <h3 class="font-bold mb-3">Churn Risk Analysis</h3>
+          <div class="table-wrap"><table id="tblChurn" class="w-full text-sm"></table></div>
+        </div>
+      </section>
+
+      <!-- GEO -->
+      <section data-page="geo" class="page hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <h3 class="font-bold mb-3">Geographic Analysis</h3>
+          <canvas id="geoChart" height="120"></canvas>
+          <div class="table-wrap mt-4"><table id="tblGeo" class="w-full text-sm"></table></div>
+        </div>
+      </section>
+
+      <!-- FORECAST -->
+      <section data-page="forecast" class="page hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <h3 class="font-bold mb-3">Renewal Forecast (Next 30 Days)</h3>
+          <canvas id="forecastChart" height="120"></canvas>
+        </div>
+      </section>
+
+      <!-- SETTINGS -->
+      <section data-page="settings" class="page hidden">
+        <div class="space-y-6">
+          <!-- Company Details -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h3 class="font-bold text-lg mb-4">Company Details</h3>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div><label class="text-sm">Company Name</label><input id="setCompanyName" class="w-full mt-1 border rounded-xl px-3 py-2.5"></div>
+              <div><label class="text-sm">Logo URL</label><input id="setLogoUrl" class="w-full mt-1 border rounded-xl px-3 py-2.5" placeholder="https://..."></div>
+              <div class="md:col-span-2"><label class="text-sm">Address</label><textarea id="setAddress" class="w-full mt-1 border rounded-xl px-3 py-2.5 h-24"></textarea></div>
+              <div><label class="text-sm">Upload Logo</label><input id="setLogoFile" type="file" accept="image/*" class="w-full mt-1"></div>
+            </div>
+          </div>
+
+          <!-- Data Source -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h3 class="font-bold text-lg mb-4">Data Source & Sync</h3>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div class="md:col-span-2"><label class="text-sm">Google Apps Script URL</label><input id="setSheetUrl" class="w-full mt-1 border rounded-xl px-3 py-2.5" placeholder="https://script.google.com/.../exec"></div>
+              <div><label class="text-sm">Dormancy Days</label><input id="setDormancy" type="number" class="w-full mt-1 border rounded-xl px-3 py-2.5"></div>
+              <div><label class="text-sm">Renewal Alert Days</label><input id="setRenewalAlert" type="number" class="w-full mt-1 border rounded-xl px-3 py-2.5"></div>
+              <div><label class="text-sm">Commission Rate %</label><input id="setCommission" type="number" step="0.1" class="w-full mt-1 border rounded-xl px-3 py-2.5"></div>
+            </div>
+            <div class="flex gap-3 mt-4">
+              <button id="testSheetConn" class="btn px-4 py-2.5 rounded-xl border text-sm">Test Connection</button>
+              <button id="saveSettings" class="btn px-4 py-2.5 rounded-xl bg-slate-900 text-white text-sm">Save Settings</button>
+            </div>
+          </div>
+
+          <!-- Bulk API -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h3 class="font-bold text-lg mb-4">Bulk Messaging API v4</h3>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div class="md:col-span-2"><label class="text-sm">API URL</label><input id="setApiUrl" class="w-full mt-1 border rounded-xl px-3 py-2.5" value="http://89.167.34.214/api/v4/sms/send"></div>
+              <div><label class="text-sm">API Key</label><input id="setApiKey" class="w-full mt-1 border rounded-xl px-3 py-2.5"></div>
+              <div><label class="text-sm">Sender ID</label><input id="setSenderId" class="w-full mt-1 border rounded-xl px-3 py-2.5"></div>
+              <div class="flex items-center gap-2"><input id="setTestMode" type="checkbox"><label class="text-sm">Test Mode (log only)</label></div>
+            </div>
+            <button id="testApiConn" class="btn mt-4 px-4 py-2.5 rounded-xl border text-sm">Test API</button>
+          </div>
+
+          <!-- Data Management -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h3 class="font-bold text-lg mb-4">Data Management</h3>
+            <div class="grid md:grid-cols-2 gap-4">
+              <div><label class="text-sm">Data Retention Period (days)</label><input id="setRetention" type="number" class="w-full mt-1 border rounded-xl px-3 py-2.5"></div>
+              <div><label class="text-sm">Auto-save Interval (minutes)</label><input id="setAutoSave" type="number" class="w-full mt-1 border rounded-xl px-3 py-2.5"></div>
+              <div class="flex items-center gap-2 md:col-span-2"><input id="setCompress" type="checkbox"><label class="text-sm">Compress localStorage</label></div>
+            </div>
+            <div class="flex flex-wrap gap-3 mt-4">
+              <button id="backupJson" class="btn px-4 py-2.5 rounded-xl border text-sm">Backup to JSON</button>
+              <label class="btn px-4 py-2.5 rounded-xl border text-sm cursor-pointer">Restore from JSON<input id="restoreJson" type="file" accept=".json" class="hidden"></label>
+              <button id="clearAllData" class="btn px-4 py-2.5 rounded-xl bg-red-600 text-white text-sm">Clear All Data</button>
+              <button id="exportToSheet" class="btn px-4 py-2.5 rounded-xl bg-emerald-600 text-white text-sm">Export to Google Sheet</button>
+            </div>
+          </div>
+
+          <!-- Header Mapping -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h3 class="font-bold text-lg mb-4">Header Mapping</h3>
+            <div id="headerMappingSettings" class="grid md:grid-cols-2 gap-3 text-sm"></div>
+          </div>
+
+          <!-- Apps Script -->
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+            <h3 class="font-bold text-lg mb-4">Google Apps Script Backend (Copy to script.google.com)</h3>
+            <pre class="bg-slate-900 text-slate-100 p-4 rounded-xl text-xs overflow-x-auto"><code>const SHEET_NAME = 'Customers';
+function doGet(e){
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  const values = sheet.getDataRange().getValues();
+  const headers = values.shift();
+  const rows = values.map(r=>{let o={};headers.forEach((h,i)=>o[h]=r[i]);return o;});
+  return ContentService.createTextOutput(JSON.stringify({headers,rows})).setMimeType(ContentService.MimeType.JSON);
+}
+function doPost(e){
+  const data = JSON.parse(e.postData.contents);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SHEET_NAME);
+  sheet.clearContents();
+  const headers = data.headers;
+  sheet.appendRow(headers);
+  data.rows.forEach(r=>sheet.appendRow(headers.map(h=>r[h]||'')));
+  return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
+}</code></pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- REFRESH -->
+      <section data-page="refresh" class="page hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 text-center space-y-4">
+          <h3 class="font-bold text-lg">Refresh Data from Google Sheets</h3>
+          <p class="text-sm text-slate-600">Fetch latest data from configured Apps Script URL. Falls back to localStorage if offline.</p>
+          <button id="doRefresh" class="btn px-6 py-3 rounded-xl bg-sky-600 text-white font-semibold">Refresh Now</button>
+          <div id="refreshStatus" class="text-sm"></div>
+        </div>
+      </section>
+
+      <!-- API LOGS -->
+      <section data-page="apiLogs" class="page hidden">
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+          <h3 class="font-bold mb-3">API Logs</h3>
+          <div id="apiLogsList" class="space-y-2 text-xs font-mono max-h-[70vh] overflow-y-auto"></div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- Print Area -->
+<div id="print-area" class="hidden"></div>
+
+<script>
+const notyf = new Notyf({duration:3500,position:{x:'right',y:'top'}});
+const SAMPLE_HEADERS = ['5G Account Number','UDU Number/MSISDN','Customer Name','Customer Number','Installation Location','Ward','Constituency','County','Status','Installation Date','Renewal Date','Sales Agent'];
+
+const defaultSettings = {
+  companyName:'Sea Breeze Data Ventures',
+  address:'Mombasa Road, Nairobi, Kenya\nP.O. Box 12345-00100\nPhone: +254 700 000000',
+  logoUrl:'',
+  googleSheetUrl:'',
+  dormancyDays:60,
+  renewalAlertDays:2,
+  commissionRate:10,
+  apiUrl:'http://89.167.34.214/api/v4/sms/send',
+  apiKey:'',
+  senderId:'SeaBreeze',
+  testMode:true,
+  autoSaveInterval:5,
+  retentionDays:365,
+  compressLocalStorage:false,
+  headerMapping:{}
+};
+
+let state = {
+  settings: load('sb_settings', defaultSettings),
+  customers: load('sb_customers', []),
+  headers: load('sb_headers', SAMPLE_HEADERS),
+  changeLog: load('sb_changelog', []),
+  notifLog: load('sb_notiflog', []),
+  apiLogs: load('sb_apilogs', []),
+  smsHistory: load('sb_smshistory', [])
+};
+
+function load(k, def){ try{ const v=localStorage.getItem(k); return v?JSON.parse(v):def }catch{return def} }
+function save(k,v){ localStorage.setItem(k, JSON.stringify(v)) }
+function persist(){ save('sb_settings',state.settings); save('sb_customers',state.customers); save('sb_headers',state.headers); save('sb_changelog',state.changeLog); save('sb_notiflog',state.notifLog); save('sb_apilogs',state.apiLogs); save('sb_smshistory',state.smsHistory); document.getElementById('lastSync').textContent='Last sync: '+new Date().toLocaleString(); }
+
+function generateMock(){
+  if(state.customers.length) return;
+  const agents=['John Mwangi','Aisha Omar','Peter Kamau','Grace Wanjiku','Brian Otieno'];
+  const counties=['Nairobi','Mombasa','Kisumu','Nakuru','Kiambu'];
+  const statuses=['Active','Inactive'];
+  const today=new Date();
+  const rows=[];
+  for(let i=1;i<=25;i++){
+    const renewalOffset = [-70,-30,-5,0,2,2,5,10,15,30][i%10];
+    const renewal = new Date(today); renewal.setDate(today.getDate()+renewalOffset);
+    const install = new Date(renewal); install.setMonth(renewal.getMonth()-6);
+    rows.push({
+      '5G Account Number':'SB5G'+String(1000+i),
+      'UDU Number/MSISDN':'2547'+String(10000000+Math.floor(Math.random()*89999999)),
+      'Customer Name':['Mary W','James K','Faith N','David O','Lucy M','Samuel T','Irene A','Kevin B','Esther C','Mark D'][i%10]+' '+i,
+      'Customer Number':'CUST'+String(2000+i),
+      'Installation Location':['Kilimani','Nyali','Milimani','Westlands','Thika Road'][i%5],
+      'Ward':'Ward '+(i%8+1),
+      'Constituency':'Constituency '+(i%5+1),
+      'County':counties[i%5],
+      'Status':statuses[i%3===0?1:0],
+      'Installation Date':install.toISOString().slice(0,10),
+      'Renewal Date':renewal.toISOString().slice(0,10),
+      'Sales Agent':agents[i%5]
+    });
+  }
+  state.customers=rows;
+  state.headers=SAMPLE_HEADERS;
+  logChange('System','Generated mock data (25 records)');
+  persist();
+}
+generateMock();
+
+/* Sidebar routing */
+const routes = document.querySelectorAll('.sidebar-link, .nav-btn');
+routes.forEach(btn=>btn.addEventListener('click',()=>navigate(btn.dataset.route)));
+function navigate(route){
+  if(!route) return;
+  if(route==='refresh'){ document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden')); document.querySelector('[data-page="refresh"]').classList.remove('hidden'); document.getElementById('pageTitle').textContent='Refresh Data'; return; }
+  document.querySelectorAll('.sidebar-link').forEach(l=>l.classList.toggle('active', l.dataset.route===route));
+  document.querySelectorAll('.page').forEach(p=>p.classList.toggle('hidden', p.dataset.page!==route));
+  document.getElementById('pageTitle').textContent = document.querySelector(`.sidebar-link[data-route="${route}"]`)?.textContent.trim()||route;
+  if(window.innerWidth<1024){ toggleSidebar(false); }
+  renderPage(route);
+}
+function toggleSidebar(show){ const sb=document.getElementById('sidebar'), ov=document.getElementById('overlay'); sb.classList.toggle('-translate-x-full', !show); ov.classList.toggle('hidden', !show); }
+document.getElementById('hamburger').onclick=()=>toggleSidebar(true);
+document.getElementById('overlay').onclick=()=>toggleSidebar(false);
+
+/* Rendering */
+function renderPage(route){
+  updateSidebarCompany();
+  switch(route){
+    case 'dashboard': renderDashboard(); break;
+    case 'all': renderTable('tblAll', state.customers); break;
+    case 'active': renderTable('tblActive', state.customers.filter(c=>c.Status==='Active')); break;
+    case 'inactive': renderTable('tblInactive', state.customers.filter(c=>c.Status==='Inactive')); break;
+    case 'dormant': renderTable('tblDormant', getDormant()); break;
+    case 'renewals': renderTable('tblRenewals', getRenewalsDue()); break;
+    case 'commission': renderCommission(); break;
+    case 'agentTrends': renderAgentTrends(); break;
+    case 'bulk': renderBulk(); break;
+    case 'notifLog': renderNotifLog(); break;
+    case 'health': renderHealth(); break;
+    case 'changeLog': renderChangeLog(); break;
+    case 'churn': renderChurn(); break;
+    case 'geo': renderGeo(); break;
+    case 'forecast': renderForecast(); break;
+    case 'settings': renderSettings(); break;
+    case 'apiLogs': renderApiLogs(); break;
+  }
+}
+function updateSidebarCompany(){
+  document.getElementById('sidebarCompany').textContent = state.settings.companyName;
+  const logo = state.settings.logoUrl || 'https://ui-avatars.com/api/?name='+encodeURIComponent(state.settings.companyName)+'&background=0ea5e9&color=fff';
+  document.getElementById('sidebarLogo').src = logo;
+}
+
+/* KPIs */
+function getDormant(){
+  const threshold = new Date(); threshold.setDate(threshold.getDate()-state.settings.dormancyDays);
+  return state.customers.filter(c=> new Date(c['Renewal Date']) < threshold);
+}
+function getRenewalsDue(){
+  const target = new Date(); target.setDate(target.getDate()+state.settings.renewalAlertDays);
+  const t = target.toISOString().slice(0,10);
+  return state.customers.filter(c=> c['Renewal Date']===t);
+}
+function renderDashboard(){
+  const active = state.customers.filter(c=>c.Status==='Active').length;
+  const inactive = state.customers.filter(c=>c.Status==='Inactive').length;
+  const dormant = getDormant().length;
+  const renewals = getRenewalsDue().length;
+  document.getElementById('kpiActive').textContent = active;
+  document.getElementById('kpiInactive').textContent = inactive;
+  document.getElementById('kpiDormant').textContent = dormant;
+  document.getElementById('kpiRenewals').textContent = renewals;
+
+  // Pie
+  const ctx = document.getElementById('statusPie');
+  if(window.statusChart) window.statusChart.destroy();
+  window.statusChart = new Chart(ctx, { type:'doughnut', data:{ labels:['Active','Inactive','Dormant'], datasets:[{ data:[active,inactive,dormant], backgroundColor:['#10b981','#f59e0b','#64748b'] }] }, options:{plugins:{legend:{position:'bottom'}}} });
+  document.getElementById('statusTableBody').innerHTML = [['Active',active],['Inactive',inactive],['Dormant',dormant]].map(r=>`<tr><td class="p-2">${r[0]}</td><td class="p-2 text-right">${r[1]}</td></tr>`).join('');
+}
+document.getElementById('sendRenewalBtn').onclick = ()=>{ navigate('bulk'); document.getElementById('loadRenewalsBtn').click(); };
+
+/* Tables */
+function renderTable(id, data){
+  const tbl = document.getElementById(id);
+  if(!tbl) return;
+  const headers = state.headers;
+  const thead = `<thead class="bg-slate-50 sticky top-0"><tr>${headers.map(h=>`<th class="text-left p-2 border-b">${h}</th>`).join('')}</tr></thead>`;
+  const tbody = `<tbody>${data.map(r=>`<tr class="odd:bg-white even:bg-slate-50">${headers.map(h=>`<td class="p-2 border-b text-xs">${escapeHtml(r[h]??'')}</td>`).join('')}</tr>`).join('')}</tbody>`;
+  tbl.innerHTML = thead+tbody;
+}
+document.getElementById('searchAll')?.addEventListener('input', e=>{
+  const q=e.target.value.toLowerCase();
+  const filtered = state.customers.filter(r=>Object.values(r).some(v=>String(v).toLowerCase().includes(q)));
+  renderTable('tblAll', filtered);
+});
+
+/* Import */
+let importData = [];
+document.getElementById('previewImport').onclick = async ()=>{
+  const file = document.getElementById('importFile').files[0];
+  if(!file) return notyf.error('Select file');
+  const data = await file.arrayBuffer();
+  const wb = XLSX.read(data);
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  const json = XLSX.utils.sheet_to_json(ws, {defval:''});
+  importData = json;
+  const preview = json.slice(0,5);
+  const headers = Object.keys(preview[0]||{});
+  document.getElementById('importPreview').innerHTML = `<table class="w-full text-xs border"><thead><tr>${headers.map(h=>`<th class="p-2 border">${h}</th>`).join('')}</tr></thead><tbody>${preview.map(r=>`<tr>${headers.map(h=>`<td class="p-2 border">${escapeHtml(r[h])}</td>`).join('')}</tr>`).join('')}</tbody></table>`;
+  // Mapping UI
+  const mapDiv = document.getElementById('headerMapping');
+  mapDiv.innerHTML = '<h4 class="font-semibold">Map Headers</h4>' + SAMPLE_HEADERS.map(sh=>`<div class="grid grid-cols-2 gap-2 items-center"><label class="text-xs">${sh}</label><select data-map="${sh}" class="border rounded px-2 py-1 text-sm"><option value="">-- ignore --</option>${headers.map(h=>`<option ${h.toLowerCase().includes(sh.split(' ')[0].toLowerCase())?'selected':''}>${h}</option>`).join('')}</select></div>`).join('');
+  document.getElementById('confirmImport').classList.remove('hidden');
+};
+document.getElementById('confirmImport').onclick = ()=>{
+  const mode = document.querySelector('input[name="importMode"]:checked').value;
+  const maps = [...document.querySelectorAll('#headerMapping select')].reduce((a,s)=>{ if(s.value) a[s.dataset.map]=s.value; return a; },{});
+  const mapped = importData.map(r=>{ const o={}; SAMPLE_HEADERS.forEach(sh=>{ o[sh]= r[maps[sh]] ?? '' }); return o; });
+  if(mode==='replace'){ state.customers=mapped; logChange('Import','Replace all'); }
+  else if(mode==='merge'){
+    const existing = new Set(state.customers.map(c=>c['5G Account Number']));
+    const toAdd = mapped.filter(m=>!existing.has(m['5G Account Number']));
+    state.customers.push(...toAdd); logChange('Import',`Merged ${toAdd.length} records`);
+  } else {
+    let updated=0;
+    const mapByAcc = new Map(state.customers.map(c=>[c['5G Account Number'],c]));
+    mapped.forEach(m=>{ if(mapByAcc.has(m['5G Account Number'])){ Object.assign(mapByAcc.get(m['5G Account Number']), m); updated++; } });
+    logChange('Import',`Updated ${updated} records`);
+  }
+  state.headers=SAMPLE_HEADERS;
+  persist();
+  notyf.success('Import completed');
+  renderPage('all');
+};
+document.getElementById('downloadTemplate').onclick = ()=>{
+  const ws = XLSX.utils.json_to_sheet([Object.fromEntries(SAMPLE_HEADERS.map(h=>[h,'']))]);
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Template');
+  XLSX.writeFile(wb,'sea-breeze-template.xlsx');
+};
+
+/* Export */
+document.getElementById('exportXlsxBtn').onclick = ()=>{
+  const ws = XLSX.utils.json_to_sheet(state.customers);
+  const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, 'Customers');
+  XLSX.writeFile(wb,'sea-breeze-customers.xlsx');
+};
+function exportJSON(){ downloadFile('sea-breeze-backup.json', JSON.stringify({settings:state.settings,customers:state.customers,headers:state.headers},null,2)); }
+function exportCSV(){ const ws=XLSX.utils.json_to_sheet(state.customers); const csv=XLSX.utils.sheet_to_csv(ws); downloadFile('sea-breeze.csv', csv); }
+function downloadFile(name, content){ const blob=new Blob([content],{type:'application/octet-stream'}); const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=name; a.click(); }
+
+/* Commission */
+function renderCommission(){
+  document.getElementById('commissionRateLabel').textContent = state.settings.commissionRate;
+  const byAgent = {};
+  state.customers.forEach(c=>{ const a=c['Sales Agent']||'Unknown'; byAgent[a]=(byAgent[a]||0)+1; });
+  const rows = Object.entries(byAgent).map(([agent,count])=>({Agent:agent, Customers:count, Commission: (count*1000*state.settings.commissionRate/100).toFixed(2)}));
+  const tbl=document.getElementById('tblCommission');
+  tbl.innerHTML = `<thead class="bg-slate-50"><tr><th class="p-2 text-left">Agent</th><th class="p-2 text-right">Customers</th><th class="p-2 text-right">Commission (KES)</th></tr></thead><tbody>${rows.map(r=>`<tr><td class="p-2 border-b">${r.Agent}</td><td class="p-2 border-b text-right">${r.Customers}</td><td class="p-2 border-b text-right">${r.Commission}</td></tr>`).join('')}</tbody>`;
+}
+
+/* Agent Trends */
+function renderAgentTrends(){
+  const byAgent={};
+  state.customers.forEach(c=>{ const a=c['Sales Agent']; byAgent[a]=(byAgent[a]||0)+1; });
+  const ctx=document.getElementById('agentChart');
+  if(window.agentChart) window.agentChart.destroy();
+  window.agentChart = new Chart(ctx,{type:'bar',data:{labels:Object.keys(byAgent),datasets:[{label:'Customers',data:Object.values(byAgent),backgroundColor:'#0ea5e9'}]},options:{plugins:{legend:{display:false}}}});
+}
+
+/* Bulk Messaging */
+function renderBulk(){
+  renderSmsHistory();
+}
+document.getElementById('loadRenewalsBtn').onclick = ()=>{
+  const recs = getRenewalsDue();
+  const tbl=document.getElementById('tblBulkRecipients');
+  tbl.innerHTML = `<thead class="bg-slate-50"><tr><th class="p-2"><input type="checkbox" id="selAll"></th><th class="p-2 text-left">Customer</th><th class="p-2 text-left">Phone</th><th class="p-2 text-left">Renewal</th></tr></thead><tbody>${recs.map((r,i)=>`<tr><td class="p-2"><input type="checkbox" class="rec" data-i="${i}" checked></td><td class="p-2">${escapeHtml(r['Customer Name'])}</td><td class="p-2">${escapeHtml(r['UDU Number/MSISDN'])}</td><td class="p-2">${escapeHtml(r['Renewal Date'])}</td></tr>`).join('')}</tbody>`;
+  tbl.dataset.recs = JSON.stringify(recs);
+  document.getElementById('selAll').onchange=e=>tbl.querySelectorAll('.rec').forEach(c=>c.checked=e.target.checked);
+};
+document.getElementById('sendTestSms').onclick = ()=> sendSms(true);
+document.getElementById('sendBulkSms').onclick = ()=> sendSms(false);
+async function sendSms(test){
+  const tbl=document.getElementById('tblBulkRecipients');
+  const recs = JSON.parse(tbl.dataset.recs||'[]');
+  const selected = [...tbl.querySelectorAll('.rec:checked')].map(c=>recs[+c.dataset.i]);
+  if(!selected.length) return notyf.error('No recipients');
+  const template = document.getElementById('smsTemplate').value;
+  const apiUrl = state.settings.apiUrl;
+  const apiKey = state.settings.apiKey;
+  const sender = state.settings.senderId;
+  const testMode = state.settings.testMode || test;
+  let sent=0;
+  for(const r of selected){
+    const msg = template.replace(/{Customer Name}/g,r['Customer Name']).replace(/{5G Account Number}/g,r['5G Account Number']).replace(/{Renewal Date}/g,r['Renewal Date']).replace(/{Customer Number}/g,r['Customer Number']);
+    const payload = {to:[String(r['UDU Number/MSISDN'])], message:msg, sender_id:sender};
+    logApi('SMS SEND', {url:apiUrl, payload, testMode});
+    if(!testMode){
+      try{
+        const res = await fetch(apiUrl,{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+apiKey},body:JSON.stringify(payload)});
+        const txt = await res.text();
+        logApi('SMS RESPONSE', {status:res.status, body:txt});
+        state.smsHistory.unshift({to:payload.to[0], message:msg, time:new Date().toISOString(), status:res.ok?'sent':'failed'});
+      }catch(e){ logApi('SMS ERROR', {error:e.message}); state.smsHistory.unshift({to:payload.to[0], message:msg, time:new Date().toISOString(), status:'error'}); }
+    }else{
+      state.smsHistory.unshift({to:payload.to[0], message:msg, time:new Date().toISOString(), status:'test'});
+    }
+    sent++;
+    await new Promise(r=>setTimeout(r,1000));
+  }
+  persist();
+  renderSmsHistory();
+  notyf.success(`${sent} messages processed (${testMode?'test':'live'})`);
+  state.notifLog.unshift({type:'Bulk SMS', count:sent, time:new Date().toISOString()});
+  persist();
+}
+function renderSmsHistory(){
+  document.getElementById('smsHistory').innerHTML = state.smsHistory.slice(0,100).map(h=>`<div class="p-2 border rounded-lg"><div class="font-mono text-xs">${h.to}</div><div class="text-xs">${escapeHtml(h.message.slice(0,80))}...</div><div class="text-[10px] text-slate-500">${new Date(h.time).toLocaleString()} • ${h.status}</div></div>`).join('');
+}
+
+/* Notif Log */
+function renderNotifLog(){
+  document.getElementById('notifLogList').innerHTML = state.notifLog.map(n=>`<div class="p-3 border rounded-xl flex justify-between"><div>${n.type}</div><div class="text-xs text-slate-500">${new Date(n.time).toLocaleString()} • ${n.count||''}</div></div>`).join('');
+}
+
+/* Health */
+function renderHealth(){
+  const missing = state.customers.filter(c=>!c['Customer Name']||!c['UDU Number/MSISDN']);
+  const dupes = findDupes();
+  document.getElementById('healthReport').innerHTML = `
+    <div class="p-4 border rounded-xl"><div class="font-bold">Missing Critical Fields</div><div class="text-3xl mt-2">${missing.length}</div><div class="text-xs text-slate-500">Name or Phone missing</div></div>
+    <div class="p-4 border rounded-xl"><div class="font-bold">Duplicate Account Numbers</div><div class="text-3xl mt-2">${dupes.length}</div><div class="text-xs text-slate-500">Based on 5G Account Number</div></div>
+  `;
+}
+function findDupes(){
+  const seen=new Map(); const dupes=[];
+  state.customers.forEach(c=>{ const k=c['5G Account Number']; if(seen.has(k)) dupes.push(c); else seen.set(k,true); });
+  return dupes;
+}
+
+/* Change Log */
+function renderChangeLog(){
+  const tbl=document.getElementById('tblChangeLog');
+  tbl.innerHTML = `<thead class="bg-slate-50"><tr><th class="p-2 text-left">Time</th><th class="p-2 text-left">User</th><th class="p-2 text-left">Action</th></tr></thead><tbody>${state.changeLog.map(l=>`<tr><td class="p-2 border-b text-xs">${new Date(l.time).toLocaleString()}</td><td class="p-2 border-b">${l.user}</td><td class="p-2 border-b">${l.action}</td></tr>`).join('')}</tbody>`;
+}
+function logChange(user, action){ state.changeLog.unshift({user,action,time:new Date().toISOString()}); if(state.changeLog.length>500) state.changeLog.pop(); persist(); }
+
+/* Churn */
+function renderChurn(){
+  const today=new Date();
+  const rows = state.customers.map(c=>{
+    const rd = new Date(c['Renewal Date']);
+    const days = Math.floor((rd-today)/86400000);
+    let risk='Low';
+    if(days<-state.settings.dormancyDays) risk='High';
+    else if(days<0) risk='Medium';
+    else if(days<=7) risk='Medium';
+    return {...c, daysToRenewal:days, risk};
+  }).filter(r=>r.risk!=='Low');
+  const tbl=document.getElementById('tblChurn');
+  tbl.innerHTML = `<thead class="bg-slate-50"><tr><th class="p-2 text-left">Customer</th><th class="p-2 text-left">Renewal</th><th class="p-2 text-left">Days</th><th class="p-2 text-left">Risk</th></tr></thead><tbody>${rows.map(r=>`<tr><td class="p-2 border-b">${escapeHtml(r['Customer Name'])}</td><td class="p-2 border-b">${r['Renewal Date']}</td><td class="p-2 border-b">${r.daysToRenewal}</td><td class="p-2 border-b"><span class="px-2 py-1 rounded text-xs ${r.risk==='High'?'bg-red-100 text-red-700':'bg-amber-100 text-amber-700'}">${r.risk}</span></td></tr>`).join('')}</tbody>`;
+}
+
+/* Geo */
+function renderGeo(){
+  const byCounty={};
+  state.customers.forEach(c=>{ byCounty[c.County]=(byCounty[c.County]||0)+1; });
+  const ctx=document.getElementById('geoChart');
+  if(window.geoChart) window.geoChart.destroy();
+  window.geoChart = new Chart(ctx,{type:'pie',data:{labels:Object.keys(byCounty),datasets:[{data:Object.values(byCounty)}]},options:{plugins:{legend:{position:'bottom'}}}});
+  const tbl=document.getElementById('tblGeo');
+  tbl.innerHTML = `<thead class="bg-slate-50"><tr><th class="p-2 text-left">County</th><th class="p-2 text-right">Customers</th></tr></thead><tbody>${Object.entries(byCounty).map(([k,v])=>`<tr><td class="p-2 border-b">${k}</td><td class="p-2 border-b text-right">${v}</td></tr>`).join('')}</tbody>`;
+}
+
+/* Forecast */
+function renderForecast(){
+  const days=30;
+  const today=new Date();
+  const buckets={};
+  for(let i=0;i<days;i++){ const d=new Date(today); d.setDate(today.getDate()+i); buckets[d.toISOString().slice(0,10)]=0; }
+  state.customers.forEach(c=>{ if(buckets.hasOwnProperty(c['Renewal Date'])) buckets[c['Renewal Date']]++; });
+  const ctx=document.getElementById('forecastChart');
+  if(window.forecastChart) window.forecastChart.destroy();
+  window.forecastChart = new Chart(ctx,{type:'line',data:{labels:Object.keys(buckets),datasets:[{label:'Renewals',data:Object.values(buckets),borderColor:'#0ea5e9',tension:.3,fill:true,backgroundColor:'rgba(14,165,233,.1)'}]},options:{plugins:{legend:{display:false}},scales:{x:{ticks:{maxRotation:0,autoSkip:true}}}});
+}
+
+/* Settings */
+function renderSettings(){
+  document.getElementById('setCompanyName').value = state.settings.companyName;
+  document.getElementById('setAddress').value = state.settings.address;
+  document.getElementById('setLogoUrl').value = state.settings.logoUrl;
+  document.getElementById('setSheetUrl').value = state.settings.googleSheetUrl;
+  document.getElementById('setDormancy').value = state.settings.dormancyDays;
+  document.getElementById('setRenewalAlert').value = state.settings.renewalAlertDays;
+  document.getElementById('setCommission').value = state.settings.commissionRate;
+  document.getElementById('setApiUrl').value = state.settings.apiUrl;
+  document.getElementById('setApiKey').value = state.settings.apiKey;
+  document.getElementById('setSenderId').value = state.settings.senderId;
+  document.getElementById('setTestMode').checked = state.settings.testMode;
+  document.getElementById('setRetention').value = state.settings.retentionDays;
+  document.getElementById('setAutoSave').value = state.settings.autoSaveInterval;
+  document.getElementById('setCompress').checked = state.settings.compressLocalStorage;
+  document.getElementById('headerMappingSettings').innerHTML = SAMPLE_HEADERS.map(h=>`<div class="p-2 border rounded-lg">${h}</div>`).join('');
+}
+document.getElementById('saveSettings').onclick = ()=>{
+  state.settings.companyName = document.getElementById('setCompanyName').value;
+  state.settings.address = document.getElementById('setAddress').value;
+  state.settings.logoUrl = document.getElementById('setLogoUrl').value;
+  state.settings.googleSheetUrl = document.getElementById('setSheetUrl').value;
+  state.settings.dormancyDays = +document.getElementById('setDormancy').value;
+  state.settings.renewalAlertDays = +document.getElementById('setRenewalAlert').value;
+  state.settings.commissionRate = +document.getElementById('setCommission').value;
+  state.settings.apiUrl = document.getElementById('setApiUrl').value;
+  state.settings.apiKey = document.getElementById('setApiKey').value;
+  state.settings.senderId = document.getElementById('setSenderId').value;
+  state.settings.testMode = document.getElementById('setTestMode').checked;
+  state.settings.retentionDays = +document.getElementById('setRetention').value;
+  state.settings.autoSaveInterval = +document.getElementById('setAutoSave').value;
+  state.settings.compressLocalStorage = document.getElementById('setCompress').checked;
+  persist();
+  updateSidebarCompany();
+  notyf.success('Settings saved');
+  logChange('Admin','Updated settings');
+};
+document.getElementById('setLogoFile').onchange = e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader(); r.onload=()=>{ state.settings.logoUrl=r.result; document.getElementById('setLogoUrl').value=r.result; persist(); updateSidebarCompany(); notyf.success('Logo uploaded'); }; r.readAsDataURL(f);
+};
+document.getElementById('testSheetConn').onclick = async ()=>{
+  const url=state.settings.googleSheetUrl || document.getElementById('setSheetUrl').value;
+  if(!url) return notyf.error('Enter URL');
+  try{
+    const res=await fetch(url); if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json(); notyf.success(`Connected. ${data.rows?.length||0} rows`); logApi('SHEET TEST',{ok:true});
+  }catch(e){ notyf.error('Connection failed, using local'); logApi('SHEET TEST',{error:e.message}); }
+};
+document.getElementById('testApiConn').onclick = async ()=>{
+  const payload={to:['254700000000'],message:'Test from Sea Breeze',sender_id:state.settings.senderId};
+  logApi('API TEST',{payload, testMode:true}); notyf.success('API test logged (test mode)');
+};
+
+/* Data Management */
+document.getElementById('backupJson').onclick = exportJSON;
+document.getElementById('restoreJson').onchange = e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader(); r.onload=()=>{ try{ const obj=JSON.parse(r.result); state.settings=obj.settings||state.settings; state.customers=obj.customers||state.customers; state.headers=obj.headers||state.headers; persist(); notyf.success('Restored'); logChange('Admin','Restored from JSON'); }catch{ notyf.error('Invalid JSON'); } }; r.readAsText(f);
+};
+document.getElementById('clearAllData').onclick = ()=>{ if(confirm('Clear all data?')){ state.customers=[]; state.changeLog=[]; persist(); notyf.success('Cleared'); } };
+document.getElementById('exportToSheet').onclick = async ()=>{
+  const url=state.settings.googleSheetUrl; if(!url) return notyf.error('Set Google Sheet URL');
+  try{
+    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({headers:state.headers,rows:state.customers})});
+    notyf.success('Exported to Google Sheet'); logApi('SHEET EXPORT',{status:res.status});
+  }catch(e){ notyf.error('Export failed'); logApi('SHEET EXPORT',{error:e.message}); }
+};
+
+/* Refresh */
+document.getElementById('doRefresh').onclick = async ()=>{
+  const url=state.settings.googleSheetUrl;
+  const status=document.getElementById('refreshStatus');
+  if(!url){ status.textContent='No URL configured, using localStorage'; return; }
+  status.textContent='Fetching...';
+  try{
+    const res=await fetch(url); if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json(); state.headers=data.headers||SAMPLE_HEADERS; state.customers=data.rows||[]; persist(); status.textContent='Refreshed '+state.customers.length+' records'; notyf.success('Data refreshed'); logChange('System','Refreshed from Google Sheets');
+  }catch(e){ status.textContent='Offline, using cached data'; notyf.error('Refresh failed, using cache'); logApi('REFRESH ERROR',{error:e.message}); }
+};
+document.getElementById('quickRefresh').onclick = ()=>{ navigate('refresh'); document.getElementById('doRefresh').click(); };
+
+/* API Logs */
+function logApi(type, data){ state.apiLogs.unshift({type,data,time:new Date().toISOString()}); if(state.apiLogs.length>500) state.apiLogs.pop(); persist(); renderApiLogs(); }
+function renderApiLogs(){
+  document.getElementById('apiLogsList').innerHTML = state.apiLogs.map(l=>`<div class="p-2 border-b"><div class="text-sky-600">${l.type} • ${new Date(l.time).toLocaleString()}</div><pre class="whitespace-pre-wrap text-[11px]">${escapeHtml(JSON.stringify(l.data,null,2))}</pre></div>`).join('');
+}
+
+/* Print */
+function printTable(tableId, title){
+  const table = document.getElementById(tableId);
+  if(!table) return;
+  const logo = state.settings.logoUrl || '';
+  const company = state.settings.companyName;
+  const address = state.settings.address.replace(/\n/g,'<br>');
+  const timestamp = new Date().toLocaleString();
+  const printHtml = `
+    <html><head><title>${title}</title>
+    <style>
+      body{font-family:Arial,sans-serif;padding:20px;color:#000}
+      .print-header{display:flex;align-items:center;gap:16px;border-bottom:2px solid #000;padding-bottom:10px;margin-bottom:20px}
+      .print-header img{max-height:60px}
+      table{width:100%;border-collapse:collapse;font-size:12px}
+      th,td{border:1px solid #000;padding:6px;text-align:left}
+      th{background:#f0f0f0}
+      .meta{margin-bottom:10px;font-size:12px}
+      @page{margin:15mm}
+    </style></head><body>
+    <div class="print-header">
+      ${logo?`<img src="${logo}">`:''}
+      <div><div style="font-size:20px;font-weight:bold">${company}</div><div>${address}</div></div>
+    </div>
+    <h2>${title}</h2>
+    <div class="meta">Generated: ${timestamp}</div>
+    ${table.outerHTML}
+    <script>window.onload=()=>window.print()<\/script>
+    </body></html>`;
+  const w=window.open('','_blank'); w.document.write(printHtml); w.document.close();
+}
+document.getElementById('quickPrint').onclick = ()=>{ const activePage=document.querySelector('.page:not(.hidden)'); const tbl=activePage.querySelector('table'); if(tbl) printTable(tbl.id, document.getElementById('pageTitle').textContent); };
+
+/* Utils */
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+/* Auto-save */
+setInterval(()=>{ persist(); }, state.settings.autoSaveInterval*60*1000);
+
+/* Init */
+navigate('dashboard');
+renderDashboard();
+updateSidebarCompany();
+
+// Error handling for offline
+window.addEventListener('online',()=>notyf.success('Back online'));
+window.addEventListener('offline',()=>notyf.error('Offline - using cached data'));
+</script>
+</body>
+</html>
